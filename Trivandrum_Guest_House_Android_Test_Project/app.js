@@ -43,28 +43,44 @@ function processDue(){
  if(changed)localStorage.setItem(STORE,JSON.stringify(records));
 }
 function renderCalendar(){
- const month=Number($("month").value),year=Number($("year").value),count=new Date(year,month+1,0).getDate();
- $("calendar").querySelector("thead").innerHTML=`<tr><th>Date / Day</th>${ROOMS.map(r=>`<th>${esc(r)}</th>`).join("")}</tr>`;
- let html="";
- for(let day=1;day<=count;day++){
-  const date=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`,dow=new Date(year,month,day).toLocaleDateString("en-IN",{weekday:"short"});
-  html+=`<tr><td>${String(day).padStart(2,"0")}<br><span class="small">${dow}</span></td>`;
+ const month=Number($("month").value),year=Number($("year").value),count=new Date(year,month+1,0).getDate(),today=todayISO();
+ const days=(start,end)=>Array.from({length:Math.max(0,end-start+1)},(_,i)=>start+i);
+ const table=(start,end)=> {
+  const list=days(start,Math.min(end,count));
+  let html=`<div class="period-title">${start===1?"Days 1–15":"Days 16–end of month"}</div><div class="gridwrap"><table class="room-calendar"><thead><tr><th class="room-head">Room</th>${list.map(d=>`<th><span class="day-number">${d}</span><span class="day-week">${new Date(year,month,d).toLocaleDateString("en-IN",{weekday:"short"})}</span></th>`).join("")}</tr></thead><tbody>`;
   ROOMS.forEach(room=>{
-   const b=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkin<=date&&date<x.checkout);
-   const due=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===date);
-   const cls=due?"checkout":b?"booked":"vacant";
-   const title=due?`Checkout today: ${due.guest_name}`:b?`Booked: ${b.guest_name}`:"Vacant";
-   html+=`<td><button class="roombox ${cls}" title="${esc(title)}" aria-label="${esc(room)} ${esc(title)}" data-date="${date}" data-room="${esc(room)}"></button></td>`;
+   html+=`<tr><th class="room-name">${esc(room)}</th>`;
+   list.forEach(day=>{
+    const date=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const booking=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkin<=date&&date<x.checkout);
+    const dueToday=date===today&&records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===today);
+    const cls=dueToday?"checkout":booking?"booked":"vacant";
+    const title=dueToday?`Checkout today: ${dueToday.guest_name} — tap to checkout`:booking?`Booked: ${booking.guest_name}`:"Vacant";
+    html+=`<td><button type="button" class="roombox ${cls}" title="${esc(title)}" aria-label="${esc(room)} ${esc(title)}" data-date="${date}" data-room="${esc(room)}"></button></td>`;
+   });
+   html+="</tr>";
   });
-  html+="</tr>";
- }
- $("calendar").querySelector("tbody").innerHTML=html;
+  html+="</tbody></table></div>";
+  return html;
+ };
+ $("calendar").innerHTML=table(1,15)+table(16,31);
  $("calendar").querySelectorAll(".roombox").forEach(el=>el.onclick=()=>roomInfo(el.dataset.date,el.dataset.room));
 }
 function roomInfo(date,room){
- const b=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkin<=date&&date<x.checkout)||records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===date);
+ const today=todayISO();
+ const dueToday=date===today&&records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===today);
+ if(dueToday){
+  const ok=confirm(`Check out ${dueToday.guest_name} now? This booking will move to Completed and all rooms in this booking will be released.`);
+  if(!ok)return;
+  dueToday.status="completed";
+  dueToday.completed_at=new Date().toISOString();
+  save();
+  toast(`${dueToday.guest_name} checked out. Booking moved to Completed.`);
+  return;
+ }
+ const b=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkin<=date&&date<x.checkout);
  if(!b){toast(`${room} is vacant on ${fmt(date)}`);return}
- toast(`${b.guest_name} · ${room} · ${fmt(b.checkin)} to ${fmt(b.checkout)}${b.checkout===date?" · CHECKOUT TODAY":""}`);
+ toast(`${b.guest_name} · ${room} · ${fmt(b.checkin)} to ${fmt(b.checkout)}`);
 }
 function renderCompleted(){
  const arr=records.filter(x=>x.status==="completed").sort((a,b)=>a.checkout.localeCompare(b.checkout)||a.guest_name.localeCompare(b.guest_name));
