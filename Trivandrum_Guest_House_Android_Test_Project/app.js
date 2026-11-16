@@ -70,8 +70,6 @@ function roomInfo(date,room){
  const today=todayISO();
  const dueToday=date===today&&records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===today);
  if(dueToday){
-  const ok=confirm(`Check out ${dueToday.guest_name} now? This booking will move to Completed and all rooms in this booking will be released.`);
-  if(!ok)return;
   dueToday.status="completed";
   dueToday.completed_at=new Date().toISOString();
   save();
