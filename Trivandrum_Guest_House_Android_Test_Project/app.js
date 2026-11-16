@@ -44,22 +44,21 @@ function processDue(){
 }
 function renderCalendar(){
  const month=Number($("month").value),year=Number($("year").value),count=new Date(year,month+1,0).getDate(),today=todayISO();
- const days=(start,end)=>Array.from({length:Math.max(0,end-start+1)},(_,i)=>start+i);
  const table=(start,end)=> {
-  const list=days(start,Math.min(end,count));
-  let html=`<div class="period-title">${start===1?"Days 1–15":"Days 16–end of month"}</div><div class="gridwrap"><table class="room-calendar"><thead><tr><th class="room-head">Room</th>${list.map(d=>`<th><span class="day-number">${d}</span><span class="day-week">${new Date(year,month,d).toLocaleDateString("en-IN",{weekday:"short"})}</span></th>`).join("")}</tr></thead><tbody>`;
-  ROOMS.forEach(room=>{
-   html+=`<tr><th class="room-name">${esc(room)}</th>`;
-   list.forEach(day=>{
-    const date=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+  let html=`<div class="period-title">${start===1?"Days 1–15":"Days 16–end of month"}</div><div class="gridwrap"><table class="date-calendar"><thead><tr><th class="date-head">Date</th>${ROOMS.map(room=>`<th class="room-column">${esc(room)}</th>`).join("")}</tr></thead><tbody>`;
+  for(let day=start;day<=Math.min(end,count);day++){
+   const date=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+   const weekday=new Date(year,month,day).toLocaleDateString("en-IN",{weekday:"short"});
+   html+=`<tr><th class="date-label"><span class="date-number">${day}</span><span class="date-week">${weekday}</span></th>`;
+   ROOMS.forEach(room=>{
     const booking=records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkin<=date&&date<x.checkout);
     const dueToday=date===today&&records.find(x=>x.status==="active"&&x.rooms.includes(room)&&x.checkout===today);
     const cls=dueToday?"checkout":booking?"booked":"vacant";
     const title=dueToday?`Checkout today: ${dueToday.guest_name} — tap to checkout`:booking?`Booked: ${booking.guest_name}`:"Vacant";
-    html+=`<td><button type="button" class="roombox ${cls}" title="${esc(title)}" aria-label="${esc(room)} ${esc(title)}" data-date="${date}" data-room="${esc(room)}"></button></td>`;
+    html+=`<td><button type="button" class="roombox ${cls}" title="${esc(title)}" aria-label="${esc(date)} ${esc(room)} ${esc(title)}" data-date="${date}" data-room="${esc(room)}"></button></td>`;
    });
    html+="</tr>";
-  });
+  }
   html+="</tbody></table></div>";
   return html;
  };
