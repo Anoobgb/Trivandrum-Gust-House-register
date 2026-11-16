@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b35">
+<title>Trivandrum Guest House Register</title>
+<style>
+:root{--deep:#123b35;--ink:#18332f;--muted:#70807c;--line:#dfe8e4;--bg:#f3f7f5;--blue:#2563eb;--green:#16a34a;--yellow:#eab308;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--deep);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:3;box-shadow:0 2px 10px #0002}
+header h1{font-size:18px;margin:0}header p{margin:3px 0 0;color:#d4e5df;font-size:11px}
+.wrap{max-width:1100px;margin:auto;padding:14px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px 5px;font-weight:700}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:13px;box-shadow:0 2px 8px #17332f08}
+h2{font-size:16px;margin:0 0 12px}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+select,input,button{font:inherit}input,select{width:100%;padding:11px;border:1px solid #ccd9d4;border-radius:9px;background:#fff;color:var(--ink)}
+label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:10px 0 5px}
+.legend{display:flex;gap:15px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:8px 0}
+.swatch{display:inline-block;width:13px;height:13px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.green{background:var(--green)}.yellow{background:var(--yellow)}.red{background:var(--red)}
+.gridwrap{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:650px;background:#fff}
+th,td{border-bottom:1px solid var(--line);padding:8px 7px;text-align:center;font-size:11px}
+th{background:#f5f8f6;color:#53645f;position:sticky;top:0;z-index:1}
+th:first-child,td:first-child{position:sticky;left:0;background:#f8faf9;z-index:2;text-align:left;min-width:76px}
+td:first-child{font-weight:700}
+.roombox{display:inline-block;width:23px;height:23px;border-radius:5px;box-shadow:inset 0 0 0 1px #00000012}
+.roombox.vacant{background:var(--yellow)}.roombox.booked{background:var(--green)}
+.roombox.checkout{background:var(--red);animation:blink .8s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.small{font-size:11px;color:var(--muted)}.hint{background:#eef4ff;color:#254a93;padding:10px;border-radius:9px;font-size:12px;margin-top:10px}
+button.primary{border:0;background:var(--deep);color:#fff;border-radius:10px;padding:12px 16px;font-weight:700}
+button.blue{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:700}
+button.outline{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:11px}
+button:disabled{opacity:.5}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.span2{grid-column:span 2}
+.roomchoices{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:7px}
+.roomchoice{border:1px solid var(--line);padding:10px;border-radius:9px;display:flex;align-items:center;gap:8px}
+.roomchoice input{width:18px;height:18px;accent-color:var(--blue)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.hidden{display:none!important}
+.card{border:1px solid var(--line);border-radius:10px;padding:11px;margin:8px 0;background:#fff}
+.card strong{font-size:14px}.meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6}
+.empty{text-align:center;color:var(--muted);padding:25px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17332f;color:#fff;padding:11px 15px;border-radius:10px;z-index:8;display:none;max-width:90%;text-align:center}
+@media(max-width:520px){.wrap{padding:10px}.panel{padding:11px}.formgrid{grid-template-columns:1fr}.span2{grid-column:auto}.tab{font-size:12px}.roomchoices{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><h1>🏡 Trivandrum Guest House</h1><p>Monthly room register · Guest entry · Completed checkout</p></header>
+<main class="wrap">
+<nav class="tabs">
+<button class="tab active" data-tab="main">Main Register</button>
+<button class="tab" data-tab="entry">New Entry</button>
+<button class="tab" data-tab="completed">Completed</button>
+</nav>
+<section id="main">
+<div class="panel">
+<h2>Monthly Room Booking Register</h2>
+<div class="row">
+<div><label for="month">Month</label><select id="month"></select></div>
+<div><label for="year">Year</label><select id="year"></select></div>
+</div>
+<div class="legend"><span><i class="swatch yellow"></i>Vacant</span><span><i class="swatch green"></i>Booked</span><span><i class="swatch red"></i>Checkout today (red blinking)</span></div>
+<div class="gridwrap"><table id="calendar"><thead></thead><tbody></tbody></table></div>
+<p class="small">Each row is a date. Each coloured square is one room's status for that date. Tap a square to view the booking details.</p>
+</div>
+</section>
+<section id="entry" class="hidden">
+<div class="panel">
+<h2>New Guest Entry</h2>
+<div id="entryLock">
+<label for="entryPass">Enter authorised passcode</label>
+<input id="entryPass" type="password" inputmode="numeric" placeholder="Passcode" autocomplete="off">
+<div class="actions"><button class="blue" id="verifyEntry">Verify &amp; Open Entry Form</button></div>
+<p class="small">Only authorised staff can open this form.</p>
+</div>
+<form id="entryForm" class="hidden">
+<div class="formgrid">
+<div class="span2"><label>Guest name *</label><input name="guest_name" required></div>
+<div><label>Number of occupants *</label><input name="occupants" type="number" min="1" value="1" required></div>
+<div><label>Guest designation *</label><select name="designation" id="designation" required><option value="">Select designation</option><option value="Retd.">Retd.</option><option value="Employee">Employee</option><option value="Other">Other</option></select></div>
+<div id="employeeWrap" class="hidden span2"><label>Employee number *</label><input name="employee_number" id="employeeNumber"></div>
+<div class="span2"><label>Rooms booked * (select one or more)</label><div class="roomchoices" id="roomChoices"></div></div>
+<div><label>Check-in date *</label><input name="checkin" type="date" required></div>
+<div><label>Check-out date *</label><input name="checkout" type="date" required></div>
+</div>
+<div class="actions"><button class="primary" type="submit">Save Booking</button><button class="outline" type="button" id="cancelEntry">Cancel</button></div>
+<p class="small">Bookings are saved on this phone in this test build. Shared online sync will be connected after Supabase setup.</p>
+</form>
+</div>
+</section>
+<section id="completed" class="hidden">
+<div class="panel">
+<h2>Completed Guest Register</h2>
+<p class="small">Records are ordered by checkout date: earliest checkout first.</p>
+<div class="actions"><button class="primary" id="exportCompleted">Download Completed Excel 🔒</button></div>
+<div id="completedList"></div>
+</div>
+</section>
+</main>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body></html>

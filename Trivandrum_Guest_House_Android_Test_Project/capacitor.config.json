@@ -1,0 +1,6 @@
+{
+  "appId": "in.powergrid.trivandrumguesthouse",
+  "appName": "Guest House Register",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
