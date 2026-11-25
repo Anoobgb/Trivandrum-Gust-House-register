@@ -11,7 +11,7 @@
 header{background:var(--deep);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:3;box-shadow:0 2px 10px #0002}
 header h1{font-size:18px;margin:0}header p{margin:3px 0 0;color:#d4e5df;font-size:11px}
 .wrap{max-width:1100px;margin:auto;padding:14px}
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
 .tab{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:11px;padding:12px 5px;font-weight:700}
 .tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:13px;box-shadow:0 2px 8px #17332f08}
@@ -34,10 +34,8 @@ th{background:#f5f8f6;color:#53645f;z-index:1}
 .date-week{display:inline-block;font-size:9px;color:#82918c;font-weight:500}
 .date-calendar td{padding:4px 0}
 .roombox{display:block;width:16px;height:16px;margin:auto;padding:0;border:0;border-radius:4px;box-shadow:inset 0 0 0 1px #00000012;cursor:pointer}
-.roombox.vacant{background:var(--yellow)}.roombox.booked{background:var(--green)}
-.roombox.checkout{background:var(--red);animation:blink .8s steps(2,start) infinite}
+.roombox.vacant{background:var(--green)}.roombox.booked{background:var(--red)}
 @media(max-width:380px){.date-calendar .date-head,.date-calendar .date-label{width:52px;min-width:52px;padding-left:4px;font-size:9px}.date-calendar .room-column{font-size:8px;padding:5px 1px}.roombox{width:14px;height:14px}.date-week{font-size:8px}}
-@keyframes blink{to{visibility:hidden}}
 .small{font-size:11px;color:var(--muted)}.hint{background:#eef4ff;color:#254a93;padding:10px;border-radius:9px;font-size:12px;margin-top:10px}
 button.primary{border:0;background:var(--deep);color:#fff;border-radius:10px;padding:12px 16px;font-weight:700}
 button.blue{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:700}
@@ -58,12 +56,12 @@ button:disabled{opacity:.5}
 </style>
 </head>
 <body>
-<header><h1>🏡 Trivandrum Guest House</h1><p>Monthly room register · Guest entry · Completed checkout</p></header>
+<header><h1>🏡 Trivandrum Guest House</h1><p>Shared room register · Guest entry · Booking date edits</p></header>
 <main class="wrap">
 <nav class="tabs">
 <button class="tab active" data-tab="main">Main Register</button>
 <button class="tab" data-tab="entry">New Entry</button>
-<button class="tab" data-tab="completed">Completed</button>
+
 </nav>
 <section id="main">
 <div class="panel">
@@ -72,9 +70,21 @@ button:disabled{opacity:.5}
 <div><label for="month">Month</label><select id="month"></select></div>
 <div><label for="year">Year</label><select id="year"></select></div>
 </div>
-<div class="legend"><span><i class="swatch yellow"></i>Vacant</span><span><i class="swatch green"></i>Booked</span><span><i class="swatch red"></i>Checkout today (red blinking)</span></div>
+<div class="legend"><span><i class="swatch green"></i>Vacant</span><span><i class="swatch red"></i>Booked</span></div>
 <div class="gridwrap"><table id="calendar"><thead></thead><tbody></tbody></table></div>
-<p class="small">Dates are shown as rows and all five rooms as columns. Dates are split into 1–15 and 16–end of month. Tap a square to view details; tap today's blinking red square to check out the guest.</p>
+<p class="small">Dates are shown as rows and all five rooms as columns. Green means vacant; red means booked. Tap a booked box and enter an authorised passcode to edit its dates. Rooms become vacant automatically after the checkout date.</p>
+</div>
+<div id="editPanel" class="panel hidden">
+<h2>Edit Booking Dates</h2>
+<p id="editGuest" class="small"></p>
+<form id="editForm">
+<input type="hidden" id="editBookingId">
+<div class="formgrid">
+<div><label>Check-in date *</label><input id="editCheckin" type="date" required></div>
+<div><label>Check-out date *</label><input id="editCheckout" type="date" required></div>
+</div>
+<div class="actions"><button class="primary" type="submit">Save Date Changes</button><button class="outline" type="button" id="cancelEdit">Cancel</button></div>
+</form>
 </div>
 </section>
 <section id="entry" class="hidden">
@@ -97,20 +107,12 @@ button:disabled{opacity:.5}
 <div><label>Check-out date *</label><input name="checkout" type="date" required></div>
 </div>
 <div class="actions"><button class="primary" type="submit">Save Booking</button><button class="outline" type="button" id="cancelEntry">Cancel</button></div>
-<p class="small">Bookings are saved on this phone in this test build. Shared online sync will be connected after Supabase setup.</p>
+<p class="small">Online multi-phone synchronisation is not active yet. A shared database must be connected before all 10 members can use the same live register.</p>
 </form>
 </div>
 </section>
-<section id="completed" class="hidden">
-<div class="panel">
-<h2>Completed Guest Register</h2>
-<p class="small">Records are ordered by checkout date: earliest checkout first.</p>
-<div class="actions"><button class="primary" id="exportCompleted">Download Completed Excel 🔒</button></div>
-<div id="completedList"></div>
-</div>
-</section>
+
 </main>
 <div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </body></html>
